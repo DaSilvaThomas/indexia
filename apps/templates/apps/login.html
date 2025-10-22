@@ -1,0 +1,45 @@
+{% extends 'apps/base.html' %}
+
+{% block content %}
+
+<div class="d-flex justify-content-center align-items-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm p-4">
+            <h4 class="text-center mb-4">Connexion administrateur</h4>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <!-- Username -->
+                <div class="mb-3">
+                    {{ form.username.label_tag }}
+                    {{ form.username }}
+                    {% for error in form.username.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Password -->
+                <div class="mb-3">
+                    {{ form.password.label_tag }}
+                    {{ form.password }}
+                    {% for error in form.password.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100">Se connecter</button>
+            </form>
+
+            {% if messages %}
+                <div class="mt-3">
+                {% for message in messages %}
+                <div class="alert alert-danger p-2">{{ message }}</div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'apps/base.html' %}
+
+{% block content %}
+
+<div class="d-flex justify-content-center align-items-center">
+    <div class="col-md-8 card shadow-sm">
+        <div class="card-body">
+            <h4 class="card-title mb-4 text-center">Importer des fichiers</h4>
+
+            <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="{{ form.file.id_for_label }}" class="form-label">
+                        {{ form.file.label }}
+                    </label>
+                    {{ form.file }}
+                    {% if form.file.errors %}
+                    <div class="text-danger small">{{ form.file.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button type="reset" class="btn btn-secondary">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Envoyer</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,90 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord</title>
+
+    <!-- CSS Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+    
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-lg" style="padding-inline: 10%">
+                <a class="navbar-brand fw-bold" href="{% url 'home' %}">Tableau de bord</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{% url 'home' %}">Accueil</a>
+                        </li>
+                        {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'upload' %}">Importer</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'document' %}">Documents</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'statistic' %}">Statistiques</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" href="{% url 'logout' %}">Déconnexion</a>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Admin</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container-lg mt-4 mb-5" style="padding-inline: 10%">
+        <!-- Breadcrumbs -->
+        <nav class="mb-5">
+            <ol class="breadcrumb">
+                {% for label, url in breadcrumbs %}
+                    {% if forloop.last %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ label }}</li>
+                    {% else %}
+                    <li class="breadcrumb-item"><a href="{{ url }}">{{ label }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ol>
+        </nav>
+
+        <!-- Main content -->
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
+        <div class="container-lg">
+            <small>&copy; 2025 Tableau de bord - Tous droits réservés.</small>
+        </div>
+    </footer>
+
+    <!-- JS Bootstrap Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JS Chart -->
+    {% comment %} <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> {% endcomment %}
+
+    <!-- JS personnalisé -->
+    {% comment %} <script src="{% static 'apps/js/script.js' %}"></script> {% endcomment %}
+
+</body>
+</html>

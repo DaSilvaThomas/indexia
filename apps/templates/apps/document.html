@@ -1,0 +1,90 @@
+{% extends 'apps/base.html' %}
+
+{% block content %}
+<h3 class="mb-4 text-center">Liste des documents</h3>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <button class="btn btn-outline-secondary btn-sm">Trier par date</button>
+        <button class="btn btn-outline-secondary btn-sm">Rechercher</button>
+    </div>
+    <form action="{% url 'delete_all_files' %}" method="post" onsubmit="return confirm('Supprimer tous les fichiers ?')">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-trash3"></i> Tout supprimer
+        </button>
+    </form>
+</div>
+
+{% if page_obj %}
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
+
+    {% for f in page_obj %}
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 rounded-3">
+            <div class="card-body d-flex flex-column p-3" style="overflow: hidden;">
+                <h6 class="card-title text-truncate mb-1" style="line-height: 1.4">{{ f.file.name }}</h6>
+                <p class="card-text text-muted small mb-3">{{ f.uploaded_at|date:"d/m/Y H:i" }}</p>
+
+                <div class="mt-auto d-flex gap-2">
+                    <a href="{{ f.file.url }}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                        <i class="bi bi-eye"></i> Voir
+                    </a>
+                    <form action="{% url 'delete_file' f.pk %}" method="post" class="flex-grow-1 m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100"
+                            onclick="return confirm('Voulez-vous vraiment supprimer ce fichier ?')">
+                            <i class="bi bi-trash"></i> Supprimer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav aria-label="Pagination" class="mt-5">
+    <ul class="pagination justify-content-center mb-0">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Précédent">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Suivant">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="text-center py-5">
+    <p class="text-muted mb-3">Aucun document pour le moment.</p>
+    <a href="{% url 'upload' %}" class="btn btn-primary btn-sm">Importer un document</a>
+</div>
+
+{% endif %}
+
+{% endblock %}
