@@ -2,6 +2,22 @@
 
 {% block content %}
 
-
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <form method="get" action="{% url 'document' %}">
+                <div class="input-group mb-3">
+                    <input type="text" 
+                           name="q" 
+                           class="form-control" 
+                           placeholder="Rechercher un document..." 
+                           aria-label="Rechercher" 
+                           value="{{ request.GET.q|default:'' }}">
+                    <button class="btn btn-primary" type="submit">Rechercher</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

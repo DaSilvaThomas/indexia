@@ -28,13 +28,16 @@
 
                 <div class="mt-auto d-flex gap-2">
                     <a href="{{ f.file.url }}" class="btn btn-sm btn-outline-primary flex-grow-1">
-                        <i class="bi bi-eye"></i> Voir
+                        <i class="bi bi-download"></i>
+                    </a>
+                    <a class="btn btn-sm btn-outline-primary flex-grow-1">
+                        <i class="bi bi-cloud"></i>
                     </a>
                     <form action="{% url 'delete_file' f.pk %}" method="post" class="flex-grow-1 m-0">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-outline-danger w-100"
                             onclick="return confirm('Voulez-vous vraiment supprimer ce fichier ?')">
-                            <i class="bi bi-trash"></i> Supprimer
+                            <i class="bi bi-trash"></i>
                         </button>
                     </form>
                 </div>

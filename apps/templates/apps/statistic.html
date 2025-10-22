@@ -1,88 +1,99 @@
 {% extends 'apps/base.html' %}
+
 {% block content %}
 
 <div class="container my-4">
+    <h3 class="mb-4 text-center">Statistiques générales</h3>
 
-  <h3 class="mb-4 text-center">Statistiques générales</h3>
-
-  <div class="row g-4">
-    <div class="col-md-4">
-      <div class="card text-center shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">Fichiers importés</h5>
-          <p class="display-6">{{ total_files }}</p>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Fichiers importés</h5>
+                    <p class="display-6">{{ total_files }}</p>
+                </div>
+            </div>
         </div>
-      </div>
+
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Mots avant nettoyage</h5>
+                    <p class="display-6">{{ total_words_before }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Mots après nettoyage</h5>
+                    <p class="display-6">{{ total_words_after }}</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="col-md-4">
-      <div class="card text-center shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">Mots avant nettoyage</h5>
-          <p class="display-6">{{ total_words_before }}</p>
+    <div class="row g-4 mt-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Répartition par type de fichier</h5>
+                    <canvas id="fileTypeChart"></canvas>
+                </div>
+            </div>
         </div>
-      </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">10 mots les plus fréquents</h5>
+                    <canvas id="wordFreqChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="col-md-4">
-      <div class="card text-center shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">Mots après nettoyage</h5>
-          <p class="display-6">{{ total_words_after }}</p>
+    <div class="row g-4 mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title mb-5">Nuage des 50 mots les plus fréquents</h5>
+                    <img src="data:image/png;base64,{{ wordcloud_image }}" alt="Nuage de mots" class="img-fluid">
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
-
-  <div class="row g-4 mt-4">
-    <div class="col-md-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">Répartition par type de fichier</h5>
-          <canvas id="fileTypeChart"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">10 mots les plus fréquents</h5>
-          <canvas id="wordFreqChart"></canvas>
-        </div>
-      </div>
-    </div>
-  </div>
-
 </div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const fileTypeData = {
-  labels: {{ filetype_counts.keys|safe }},
-  datasets: [{
-    data: {{ filetype_counts.values|safe }},
-    backgroundColor: ['#0d6efd','#6c757d','#198754']
-  }]
-};
+    const fileTypeData = {
+        labels: {{ filetype_labels|safe }},
+        datasets: [{
+            data: {{ filetype_values|safe }},
+            backgroundColor: ['#0d6efd','#6c757d','#198754','#ffc107','#dc3545']
+        }]
+    };
 
-const wordFreqData = {
-  labels: {{ most_common_words|map(attribute=0)|list|safe }},
-  datasets: [{
-    data: {{ most_common_words|map(attribute=1)|list|safe }},
-    backgroundColor: '#0d6efd'
-  }]
-};
+    const wordFreqData = {
+        labels: {{ word_labels|safe }},
+        datasets: [{
+            data: {{ word_values|safe }},
+            backgroundColor: '#0d6efd'
+        }]
+    };
 
-new Chart(document.getElementById('fileTypeChart'), {
-  type: 'pie',
-  data: fileTypeData
-});
+    new Chart(document.getElementById('fileTypeChart'), {
+        type: 'pie',
+        data: fileTypeData
+    });
 
-new Chart(document.getElementById('wordFreqChart'), {
-  type: 'bar',
-  data: wordFreqData
-});
+    new Chart(document.getElementById('wordFreqChart'), {
+        type: 'bar',
+        data: wordFreqData
+    });
 </script>
 
 {% endblock %}
