@@ -175,24 +175,26 @@ def statistic_view(request):
     word_values = [v for _, v in most_common_words]
 
     # Génération du nuage de mots (50 mots les plus fréquents)
-    counter_50 = Counter(all_cleaned_words).most_common(50)
-    freq_dict = dict(counter_50)
+    img_base64 = None  # valeur par défaut
+    if all_cleaned_words:
+        counter_50 = Counter(all_cleaned_words).most_common(50)
+        freq_dict = dict(counter_50)
 
-    wc = WordCloud(
-        width=800,
-        height=400,
-        background_color='white',
-        colormap='Blues',
-        prefer_horizontal=1.0,
-        max_words=50,
-        random_state=42
-    ).generate_from_frequencies(freq_dict)
+        wc = WordCloud(
+            width=800,
+            height=400,
+            background_color='white',
+            colormap='Blues',
+            prefer_horizontal=1.0,
+            max_words=50,
+            random_state=42
+        ).generate_from_frequencies(freq_dict)
 
-    # Convertir en image Base64 pour afficher dans le template
-    img_buffer = io.BytesIO()
-    wc.to_image().save(img_buffer, format='PNG')
-    img_buffer.seek(0)
-    img_base64 = base64.b64encode(img_buffer.getvalue()).decode()
+        # Convertir en image Base64 pour afficher dans le template
+        img_buffer = io.BytesIO()
+        wc.to_image().save(img_buffer, format='PNG')
+        img_buffer.seek(0)
+        img_base64 = base64.b64encode(img_buffer.getvalue()).decode()
 
     context = {
         'total_files': total_files,
@@ -206,6 +208,49 @@ def statistic_view(request):
         'word_labels': json.dumps(word_labels),
         'word_values': json.dumps(word_values),
         'wordcloud_image': img_base64,
+        'breadcrumbs': [
+            ("Accueil", "/"),
+            ("Statistiques", "/statistiques/")
+        ]
     }
 
     return render(request, 'apps/statistic.html', context)
+
+
+@login_required
+def cloud_view(request, pk):
+    file_obj = get_object_or_404(UploadedFile, pk=pk)
+    
+    cleaned_text = file_obj.cleaned_text
+    words = cleaned_text.split()
+
+    img_base64 = None
+    if words:
+        counter_50 = Counter(words).most_common(50)
+        freq_dict = dict(counter_50)
+
+        wc = WordCloud(
+            width=800,
+            height=400,
+            background_color='white',
+            colormap='Blues',
+            prefer_horizontal=1.0,
+            max_words=50,
+            random_state=42
+        ).generate_from_frequencies(freq_dict)
+
+        # Convertir en image Base64 pour afficher dans le template
+        img_buffer = io.BytesIO()
+        wc.to_image().save(img_buffer, format='PNG')
+        img_buffer.seek(0)
+        img_base64 = base64.b64encode(img_buffer.getvalue()).decode()
+
+    return render(request, 'apps/cloud.html', {
+        'file_obj': file_obj,
+        'wordcloud_image': img_base64,
+        'breadcrumbs': [
+            ("Accueil", "/"),
+            ("Documents", "/documents/"),
+            ("Nuage de mot", "/nuage/")
+        ]
+    })

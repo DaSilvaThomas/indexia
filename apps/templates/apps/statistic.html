@@ -69,11 +69,23 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    const filetype_labels = {{ filetype_labels|safe }};
+    const filetype_values = {{ filetype_values|safe }};
+
+    const colorMap = {
+        '.pdf': '#D32026',
+        '.docx': '#185ABD',
+        '.txt': '#6c757d'
+    };
+
+    // Générer un tableau de couleurs dans le bon ordre
+    const backgroundColors = filetype_labels.map(ext => colorMap[ext] || '#999999');
+
     const fileTypeData = {
-        labels: {{ filetype_labels|safe }},
+        labels: filetype_labels,
         datasets: [{
-            data: {{ filetype_values|safe }},
-            backgroundColor: ['#0d6efd','#6c757d','#198754','#ffc107','#dc3545']
+            data: filetype_values,
+            backgroundColor: backgroundColors
         }]
     };
 

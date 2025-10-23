@@ -1,0 +1,40 @@
+{% extends 'apps/base.html' %}
+
+{% block content %}
+
+<h3 class="mb-4 text-center">Nuage de mot</h3>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <a href="{% url 'document' %}" class="btn btn-outline-danger btn-sm">Retour</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+
+                <div class="mb-5 d-flex justify-content-center align-items-center gap-3">
+                    <h5 class="card-title mb-0">{{ file_obj.filename }}</h5>
+
+                    {% if file_obj.extension == "docx" %}
+                    <span class="badge text-uppercase" style="width: fit-content; background-color: #185ABD;">
+                        {{ file_obj.extension }}
+                    </span>
+                    {% elif file_obj.extension == "pdf" %}
+                    <span class="badge text-uppercase" style="width: fit-content; background-color: #D32026;">
+                        {{ file_obj.extension }}
+                    </span>
+                    {% else %}
+                    <span class="badge bg-secondary text-uppercase" style="width: fit-content;">
+                        {{ file_obj.extension }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <img src="data:image/png;base64,{{ wordcloud_image }}" alt="Nuage de mots" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
