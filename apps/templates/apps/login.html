@@ -12,7 +12,9 @@
                 
                 <!-- Username -->
                 <div class="mb-3">
-                    {{ form.username.label_tag }}
+                    <div class="mb-1">
+                        {{ form.username.label_tag }}
+                    </div>
                     {{ form.username }}
                     {% for error in form.username.errors %}
                     <div class="text-danger small">{{ error }}</div>
@@ -21,7 +23,9 @@
                 
                 <!-- Password -->
                 <div class="mb-3">
-                    {{ form.password.label_tag }}
+                    <div class="mb-1">
+                        {{ form.password.label_tag }}
+                    </div>
                     {{ form.password }}
                     {% for error in form.password.errors %}
                     <div class="text-danger small">{{ error }}</div>

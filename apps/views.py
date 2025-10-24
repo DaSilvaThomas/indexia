@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.http import FileResponse, Http404
 
 from collections import Counter
 import os, json
@@ -14,8 +15,9 @@ import base64
 from .forms import UploadFileForm, loginForm
 from .models import UploadedFile
 
-from .utils.text_extraction import extract_text_from_file
-from .utils.text_cleaning import clean_and_lemmatize
+from .utils.extraction import extract_text_from_file
+from .utils.cleaning import clean_and_lemmatize
+from .utils.truncate import truncate_words
 
 
 def login_view(request):
@@ -136,6 +138,19 @@ def document_view(request):
 
 
 @login_required
+def download_view(request, pk):
+    file_obj = get_object_or_404(UploadedFile, pk=pk)
+    file_path = file_obj.file.path
+
+    if not os.path.exists(file_path):
+        raise Http404("Fichier introuvable")
+
+    response = FileResponse(open(file_path, 'rb'))
+    response['Content-Disposition'] = f'attachment; filename="{file_obj.filename}.{file_obj.extension}"'
+    return response
+
+
+@login_required
 def statistic_view(request):
     files = UploadedFile.objects.all()
 
@@ -245,8 +260,15 @@ def cloud_view(request, pk):
         img_buffer.seek(0)
         img_base64 = base64.b64encode(img_buffer.getvalue()).decode()
 
+    cleaned_text_cut = truncate_words(cleaned_text)
+
+    text_content = file_obj.text_content
+    text_content_cut = truncate_words(text_content)
+
     return render(request, 'apps/cloud.html', {
         'file_obj': file_obj,
+        'text_content_cut': text_content_cut,
+        'cleaned_text_cut': cleaned_text_cut,
         'wordcloud_image': img_base64,
         'breadcrumbs': [
             ("Accueil", "/"),
