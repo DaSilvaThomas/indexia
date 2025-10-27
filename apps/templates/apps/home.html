@@ -2,21 +2,107 @@
 
 {% block content %}
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <form method="get" action="{% url 'document' %}">
-                <div class="input-group mb-3">
-                    <input type="text" 
-                           name="q" 
-                           class="form-control" 
-                           placeholder="Rechercher un document..." 
-                           aria-label="Rechercher" 
-                           value="{{ request.GET.q|default:'' }}">
-                    <button class="btn btn-primary" type="submit">Rechercher</button>
-                </div>
-            </form>
+<div class="row">
+    <div class="col-12">
+        <div class="text-center mb-5">
+            <h1 class="fw-bold" style="color: #343a40;">Indexia</h1>
+            <p class="lead text-muted">Moteur de recherche documentaire avec index inversé</p>
         </div>
+
+        <!-- Barre de recherche -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form method="get" action="{% url 'home' %}">
+                    <div class="input-group input-group-md">
+                        <input 
+                            type="text" 
+                            name="q"
+                            class="form-control" 
+                            placeholder="Rechercher dans les documents (ex: chat, chat AND chien, chat OR chien)" 
+                            value="{{ query }}"
+                            autocomplete="off"
+                        >
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-search"></i> Rechercher
+                        </button>
+                    </div>
+                    <small class="text-muted d-block mt-2">
+                        <i class="bi bi-info-circle"></i> 
+                        Utilisez <strong>AND</strong> pour trouver des documents contenant tous les termes, 
+                        ou <strong>OR</strong> pour au moins un des termes.
+                    </small>
+                </form>
+            </div>
+        </div>
+
+        <!-- Résultats de recherche -->
+        {% if search_performed %}
+        <div class="card shadow-sm">
+            <div class="card-header text-white" style="background-color: #212529;">
+                <h5 class="mb-0">
+                    <i class="bi bi-search"></i> Résultats pour "{{ query }}"
+                    <span class="badge bg-light text-dark float-end">{{ results_count }} document(s)</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if results_count > 0 %}
+                <div class="list-group">
+                    {% for file in results %}
+                    <div class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">
+                                    <i class="bi bi-file-earmark-text text-primary"></i>
+                                    {{ file.filename }}.{{ file.extension }}
+                                </h6>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> Importé le {{ file.uploaded_at|date:"d/m/Y à H:i" }}
+                                </small>
+                            </div>
+                            <div>
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'cloud' file.pk %}" class="btn btn-sm btn-outline-primary me-2">
+                                    <i class="bi bi-eye"></i> Voir
+                                </a>
+                                <a href="{% url 'download' file.pk %}" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-download"></i> Télécharger
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if file.cleaned_text %}
+                        <p class="mb-1 mt-2 text-muted small">
+                            {{ file.cleaned_text|truncatewords:30 }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-warning text-center" role="alert">
+                    <i class="bi bi-exclamation-triangle fs-1"></i>
+                    <h5 class="mt-2">Aucun résultat trouvé</h5>
+                    <p class="mb-0">Aucun document ne correspond à votre recherche "{{ query }}".</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Exemples de recherche -->
+        {% if not search_performed %}
+        <div class="card mt-4 border-0 bg-light">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-lightbulb"></i> Exemples de recherche :</h6>
+                <ul class="list-unstyled mb-0">
+                    <li><code>intelligence</code> - Trouve tous les documents contenant "intelligence"</li>
+                    <li><code>machine AND apprentissage</code> - Trouve les documents contenant les deux termes</li>
+                    <li><code>python OR java</code> - Trouve les documents contenant au moins un des deux termes</li>
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
     </div>
 </div>
 

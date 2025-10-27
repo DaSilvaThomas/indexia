@@ -8,7 +8,6 @@ from django.http import FileResponse, Http404
 from collections import Counter
 import os, json
 from wordcloud import WordCloud
-import matplotlib.pyplot as plt
 import io
 import base64
 
@@ -18,6 +17,8 @@ from .models import UploadedFile
 from .utils.extraction import extract_text_from_file
 from .utils.cleaning import clean_and_lemmatize
 from .utils.truncate import truncate_words
+from .utils.indexing import add_document_to_index, remove_document_from_index
+from .utils.searching import search_documents
 
 
 def login_view(request):
@@ -49,11 +50,23 @@ def logout_view(request):
 
 
 def home_view(request):
-    pass
-
-    return render(request, 'apps/home.html', {
-       'breadcrumbs': [("Accueil", "/")],
-    })
+    query = request.GET.get('q', '').strip()
+    results = []
+    search_performed = False
+    
+    if query:
+        search_performed = True
+        results = search_documents(query)
+    
+    context = {
+        'query': query,
+        'results': results,
+        'search_performed': search_performed,
+        'results_count': results.count() if results else 0,
+        'breadcrumbs': [("Accueil", "/")],
+    }
+    
+    return render(request, 'apps/home.html', context)
 
 
 @login_required
@@ -75,6 +88,7 @@ def upload_view(request):
                 uploaded_file.cleaned_text = cleaned
 
                 uploaded_file.save()
+                add_document_to_index(uploaded_file.id, cleaned)
 
             return redirect('document')
         else:
@@ -100,6 +114,7 @@ def delete_file_view(request, pk):
         if os.path.exists(file_path):
             os.remove(file_path)
 
+    remove_document_from_index(file_obj.id)
     file_obj.delete()
 
     return redirect('document')
@@ -112,8 +127,11 @@ def delete_all_files_view(request):
     for f in files:
         if f.file:
             file_path = f.file.path
+
             if os.path.exists(file_path):
                 os.remove(file_path)
+
+        remove_document_from_index(f.id)
 
     files.delete()
 

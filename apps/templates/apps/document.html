@@ -26,6 +26,7 @@
 
                 <h6 class="card-title text-truncate mb-2" style="line-height: 1.4">
                     <a href="{% url 'cloud' f.pk %}" class="text-body text-decoration-none">
+                        <i class="bi bi-file-earmark-text text-primary"></i>
                         {{ f.filename }}
                     </a>
                 </h6>
@@ -45,12 +46,12 @@
                 {% endif %}
 
                 <p class="card-text text-muted small mb-3">
-                    {{ f.uploaded_at|date:"d/m/Y H:i" }}
+                    <i class="bi bi-calendar"></i> {{ f.uploaded_at|date:"d/m/Y" }}
                 </p>
 
                 <div class="mt-auto d-flex gap-2">
 
-                    <a href="{% url 'download' f.pk %}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                    <a href="{% url 'download' f.pk %}" class="btn btn-sm btn-outline-success flex-grow-1">
                         <i class="bi bi-download"></i>
                     </a>
 
