@@ -11,7 +11,7 @@ from wordcloud import WordCloud
 import io
 import base64
 
-from .forms import UploadFileForm, loginForm
+from .forms import UploadFileForm, UploadFolderForm, loginForm
 from .models import UploadedFile
 
 from .utils.extraction import extract_text_from_file
@@ -19,6 +19,7 @@ from .utils.cleaning import clean_and_lemmatize
 from .utils.truncate import truncate_words
 from .utils.indexing import add_document_to_index, remove_document_from_index
 from .utils.searching import search_documents
+from .utils.files import filter_allowed_files
 
 
 def login_view(request):
@@ -71,33 +72,51 @@ def home_view(request):
 
 @login_required
 def upload_view(request):
+    upload_type = request.GET.get('type', 'files')  # 'files' ou 'folder'
+    
     if request.method == 'POST':
-        form = UploadFileForm(request.POST, request.FILES)
-
-        files = request.FILES.getlist('file')
-
+        files = request.FILES.getlist('file') if upload_type == 'files' else request.FILES.getlist('folder')
+        
         if files:
-            for f in files:
-                uploaded_file = UploadedFile.objects.create(file=f)
-                file_path = uploaded_file.file.path
+            # Filtrer les fichiers autorisés
+            allowed_files = filter_allowed_files(files)
+            
+            if not allowed_files:
+                messages.warning(request, "Aucun fichier valide trouvé (.txt, .pdf, .docx).")
+                return redirect('upload')
+            
+            uploaded_count = 0
+            for f in allowed_files:
+                try:
+                    uploaded_file = UploadedFile.objects.create(file=f)
+                    file_path = uploaded_file.file.path
 
-                text = extract_text_from_file(file_path)
-                uploaded_file.text_content = text
+                    text = extract_text_from_file(file_path)
+                    uploaded_file.text_content = text
 
-                cleaned = clean_and_lemmatize(text)
-                uploaded_file.cleaned_text = cleaned
+                    cleaned = clean_and_lemmatize(text)
+                    uploaded_file.cleaned_text = cleaned
 
-                uploaded_file.save()
-                add_document_to_index(uploaded_file.id, cleaned)
-
-            return redirect('document')
+                    uploaded_file.save()
+                    add_document_to_index(uploaded_file.id, cleaned)
+                    uploaded_count += 1
+                except Exception as e:
+                    messages.error(request, f"Erreur lors du traitement de {f.name}: {str(e)}")
+            
+            messages.success(request, f"{uploaded_count} fichier(s) importé(s) avec succès.")
+            # return redirect('document')
         else:
-            form.add_error('file', "Veuillez sélectionner au moins un fichier.")
+            messages.error(request, "Veuillez sélectionner au moins un fichier.")
+    
+    # Choisir le bon formulaire selon le type
+    if upload_type == 'folder':
+        form = UploadFolderForm()
     else:
         form = UploadFileForm()
 
     return render(request, 'apps/upload.html', {
         'form': form,
+        'upload_type': upload_type,
         'breadcrumbs': [
             ("Accueil", "/"),
             ("Importer", "/importer/")
@@ -250,7 +269,6 @@ def statistic_view(request):
     return render(request, 'apps/statistic.html', context)
 
 
-@login_required
 def cloud_view(request, pk):
     file_obj = get_object_or_404(UploadedFile, pk=pk)
     
@@ -283,14 +301,30 @@ def cloud_view(request, pk):
     text_content = file_obj.text_content
     text_content_cut = truncate_words(text_content)
 
-    return render(request, 'apps/cloud.html', {
+    # Statistiques du fichier
+    total_words_before = len(text_content.split())
+    total_words_after = len(cleaned_text.split())
+    words_removed = total_words_before - total_words_after
+
+    most_common_words = Counter(cleaned_text.split()).most_common(10)
+    word_labels = [w for w, _ in most_common_words]
+    word_values = [v for _, v in most_common_words]
+
+    context = {
         'file_obj': file_obj,
         'text_content_cut': text_content_cut,
         'cleaned_text_cut': cleaned_text_cut,
         'wordcloud_image': img_base64,
+        'total_words_before': total_words_before,
+        'total_words_after': total_words_after,
+        'words_removed': words_removed,
+        'word_labels': json.dumps(word_labels),
+        'word_values': json.dumps(word_values), 
         'breadcrumbs': [
             ("Accueil", "/"),
             ("Documents", "/documents/"),
             ("Nuage de mot", "/nuage/")
         ]
-    })
+    }
+
+    return render(request, 'apps/cloud.html', context)

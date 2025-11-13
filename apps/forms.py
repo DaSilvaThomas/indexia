@@ -26,7 +26,7 @@ class UploadFileForm(forms.ModelForm):
         model = UploadedFile
         fields = ['file']
         labels = {
-            'file': 'Choisir un fichier (txt, pdf et docx) :',
+            'file': 'Choisir un fichier :',
         }
         widgets = {
             'file': MultipleFileInput(attrs={
@@ -46,3 +46,14 @@ class UploadFileForm(forms.ModelForm):
             raise forms.ValidationError("Seuls les fichiers .txt, .pdf et .docx sont autorisés.")
 
         return file
+
+class UploadFolderForm(forms.Form):
+    folder = forms.FileField(
+        label='Choisir un dossier :',
+        widget=MultipleFileInput(attrs={
+            'class': 'form-control',
+            'id': 'folder',
+            'webkitdirectory': True,
+            'directory': True,
+        }),
+    )

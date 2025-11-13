@@ -20,7 +20,7 @@
                             class="form-control" 
                             placeholder="Rechercher dans les documents (ex: chat, chat AND chien, chat OR chien)" 
                             value="{{ query }}"
-                            autocomplete="off"
+                            autocomplete="on"
                         >
                         <button class="btn btn-primary" type="submit">
                             <i class="bi bi-search"></i> Rechercher
@@ -60,10 +60,10 @@
                                 </small>
                             </div>
                             <div>
-                                {% if user.is_authenticated %}
                                 <a href="{% url 'cloud' file.pk %}" class="btn btn-sm btn-outline-primary me-2">
                                     <i class="bi bi-eye"></i> Voir
                                 </a>
+                                {% if user.is_authenticated %}
                                 <a href="{% url 'download' file.pk %}" class="btn btn-sm btn-outline-success">
                                     <i class="bi bi-download"></i> Télécharger
                                 </a>
@@ -75,6 +75,9 @@
                             {{ file.cleaned_text|truncatewords:30 }}
                         </p>
                         {% endif %}
+                        <small class="text-muted">
+                            <i class="bi bi-folder2-open"></i> media/{{ file.filename }}.{{ file.extension }} 
+                        </small>
                     </div>
                     {% endfor %}
                 </div>

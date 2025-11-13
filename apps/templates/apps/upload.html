@@ -7,20 +7,62 @@
         <div class="card-body">
             <h4 class="card-title mb-4 text-center">Importer des fichiers</h4>
 
-            <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data">
+            <!-- Sélecteur de type d'upload -->
+            <div class="btn-group w-100 mb-4" role="group">
+                <a href="{% url 'upload' %}?type=files" 
+                   class="btn {% if upload_type == 'files' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    <i class="bi bi-file-earmark"></i> Fichiers
+                </a>
+                <a href="{% url 'upload' %}?type=folder" 
+                   class="btn {% if upload_type == 'folder' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    <i class="bi bi-folder"></i> Dossier
+                </a>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <form action="{% url 'upload' %}?type={{ upload_type }}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="mb-3">
-                    <label for="{{ form.file.id_for_label }}" class="form-label">
-                        {{ form.file.label }}
-                    </label>
-                    {{ form.file }}
-                    {% if form.file.errors %}
-                    <div class="text-danger small">{{ form.file.errors }}</div>
+                    {% if upload_type == 'folder' %}
+                        <label for="{{ form.folder.id_for_label }}" class="form-label">
+                            {{ form.folder.label }}
+                        </label>
+                        {{ form.folder }}
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i> 
+                            Seul les fichiers .txt, .pdf et .docx seront importés.
+                        </div>
+                        {% if form.folder.errors %}
+                        <div class="text-danger small">{{ form.folder.errors }}</div>
+                        {% endif %}
+                    {% else %}
+                        <label for="{{ form.file.id_for_label }}" class="form-label">
+                            {{ form.file.label }}
+                        </label>
+                        {{ form.file }}
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i> 
+                            Seul les fichiers .txt, .pdf et .docx sont acceptés.
+                        </div>
+                        {% if form.file.errors %}
+                        <div class="text-danger small">{{ form.file.errors }}</div>
+                        {% endif %}
                     {% endif %}
                 </div>
                 <div class="d-flex justify-content-between">
                     <button type="reset" class="btn btn-secondary">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Envoyer</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Envoyer
+                    </button>
                 </div>
             </form>
 

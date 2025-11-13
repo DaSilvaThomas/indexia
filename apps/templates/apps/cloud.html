@@ -21,10 +21,10 @@
 </div>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <a href="{% url 'document' %}" class="btn btn-outline-danger btn-sm">Retour</a>
+    <button onclick="history.back()" class="btn btn-outline-danger btn-sm">Retour</button>
 </div>
 
-<div class="row g-4 mb-4">
+<div class="row g-4 mb-5">
     <div class="col-12">
         <div class="card shadow-sm">
             <div class="card-body text-center">
@@ -35,36 +35,101 @@
     </div>
 </div>
 
-<div class="row g-4 mt-4">
-    <div class="col-6">
-        <div class="card shadow-sm">
-            <div class="card-body text-center">
-                <h5 class="card-title mb-3">Extrait du texte original</h5>
-                {% if text_content_cut %}
-                    <p style="text-align: justify;">
-                        {{ text_content_cut }}
-                    </p>
-                {% else %}
-                    <p>Aucun texte.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
+{% if user.is_authenticated %}
+<div class="container my-4">
+    <h3 class="mb-4 text-center">Statistiques du fichier</h3>
 
-    <div class="col-6">
-        <div class="card shadow-sm">
-            <div class="card-body text-center">
-                <h5 class="card-title mb-3">Extrait du texte nettoyé</h5>
-                {% if cleaned_text_cut %}
-                    <p style="text-align: justify;">
-                        {{ cleaned_text_cut }}
-                    </p>
-                {% else %}
-                    <p>Aucun texte.</p>
-                {% endif %}
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card text-center shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Mots avant nettoyage</h5>
+                        <p class="display-6">{{ total_words_before }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card text-center shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Mots après nettoyage</h5>
+                        <p class="display-6">{{ total_words_after }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card text-center shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Mots supprimés</h5>
+                        <p class="display-6">{{ words_removed }}</p>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <div class="row g-4 mt-4">
+            <div class="col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">10 mots les plus fréquents</h5>
+                        <canvas id="wordFreqChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-4">
+            <div class="col-6">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h5 class="card-title mb-3">Extrait du texte original</h5>
+                        {% if text_content_cut %}
+                            <p style="text-align: justify;">
+                                {{ text_content_cut }}
+                            </p>
+                        {% else %}
+                            <p>Aucun texte.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h5 class="card-title mb-3">Extrait du texte nettoyé</h5>
+                        {% if cleaned_text_cut %}
+                            <p style="text-align: justify;">
+                                {{ cleaned_text_cut }}
+                            </p>
+                        {% else %}
+                            <p>Aucun texte.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const wordFreqData = {
+        labels: {{ word_labels|safe }},
+        datasets: [{
+            label: 'Fréquence des mots',
+            data: {{ word_values|safe }},
+            backgroundColor: '#0d6efd'
+        }]
+    };
+
+    new Chart(document.getElementById('wordFreqChart'), {
+        type: 'bar',
+        data: wordFreqData
+    });
+</script>
 
 {% endblock %}
