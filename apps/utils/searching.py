@@ -1,4 +1,5 @@
 import os
+import difflib
 from django.conf import settings
 from apps.models import UploadedFile
 from .indexing import load_index
@@ -9,25 +10,31 @@ INDEX_FILE_PATH = os.path.join(settings.MEDIA_ROOT, 'inverted_index.json')
 
 def search_documents(query):
     """
-    Recherche des documents selon une requête avec opérateurs booléens
-    Supporte AND, OR et les recherches simples
-    """    
+    Recherche des documents selon une requête.
+    Retourne un tuple: (results, suggestions)
+    """
     if not query:
-        return []
-    
+        return UploadedFile.objects.none(), []
+
     index = load_index()
     query = query.lower().strip()
-    
+
     # Détection des opérateurs booléens
     if ' and ' in query:
         terms = [t.strip() for t in query.split(' and ')]
-        return search_with_and(terms, index)
+        results = search_with_and(terms, index)
     elif ' or ' in query:
         terms = [t.strip() for t in query.split(' or ')]
-        return search_with_or(terms, index)
+        results = search_with_or(terms, index)
     else:
-        # Recherche simple (un seul mot)
-        return search_single_term(query, index)
+        results = search_single_term(query, index)
+
+    # Si aucun résultat → proposer des suggestions
+    suggestions = []
+    if not results.exists():
+        suggestions = suggest_similar_words(query, index)
+
+    return results, suggestions
 
 
 def search_single_term(term, index):
@@ -76,3 +83,16 @@ def search_with_or(terms, index):
     if result_ids:
         return UploadedFile.objects.filter(id__in=result_ids).order_by('-uploaded_at')
     return UploadedFile.objects.none()
+
+
+def suggest_similar_words(query, index, limit=5):
+    """Retourne les mots les plus proches du terme recherché."""
+    if not query or not index:
+        return []
+
+    words = list(index.keys())
+
+    # difflib utilise une similarité entre 0 et 1
+    suggestions = difflib.get_close_matches(query, words, n=limit, cutoff=0.5)
+
+    return suggestions

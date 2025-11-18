@@ -53,15 +53,17 @@ def logout_view(request):
 def home_view(request):
     query = request.GET.get('q', '').strip()
     results = []
+    suggestions = []
     search_performed = False
     
     if query:
         search_performed = True
-        results = search_documents(query)
+        results, suggestions = search_documents(query)
     
     context = {
         'query': query,
         'results': results,
+        'suggestions': suggestions,
         'search_performed': search_performed,
         'results_count': results.count() if results else 0,
         'breadcrumbs': [("Accueil", "/")],

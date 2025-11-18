@@ -85,7 +85,22 @@
                 <div class="alert alert-warning text-center" role="alert">
                     <i class="bi bi-exclamation-triangle fs-1"></i>
                     <h5 class="mt-2">Aucun résultat trouvé</h5>
-                    <p class="mb-0">Aucun document ne correspond à votre recherche "{{ query }}".</p>
+                    <p class="mb-3">Aucun document ne correspond à votre recherche "{{ query }}".</p>
+                    {% if suggestions %}
+                    <div class="mt-4">
+                        <h6 class="fw-bold mb-3">
+                            <i class="bi bi-lightbulb"></i> Suggestions de mots similaires
+                        </h6>
+
+                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                            {% for word in suggestions %}
+                            <a href="?q={{ word }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                                <i class="bi bi-search"></i> {{ word }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
                 {% endif %}
             </div>
